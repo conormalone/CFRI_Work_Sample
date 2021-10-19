@@ -1,8 +1,12 @@
 ---
-title: "CFRI Work Sample"
+title: "CFRI Sample of Work"
 author: "Conor Malone"
 date: "19/10/2021"
-output: word_document
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -34,46 +38,81 @@ library(lubridate)
 data$Date_of_Birth <- ymd(data$Date_of_Birth)
 data$Date_of_Encounter <- ymd(data$Date_of_Encounter)
 data$Age_at_Encounter <- as.integer(floor((data$Date_of_Encounter- data$Date_of_Birth)/365))
-data$Age <- as.integer(floor((ymd("2020-12-31")- data$Date_of_Birth)/365))
+data$Age_at_Encounter_Cont <- (data$Date_of_Encounter- data$Date_of_Birth)/365
+data$`Age at 31/12/2020` <- as.integer(floor((ymd("2020-12-31")- data$Date_of_Birth)/365))
 ```
 
 ## Question 1
-# Table of Demographics
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Table of Demographics
+
+a table of demographics is below, stratified by Gender at birth:
+
 ```{r echo = F, warning=FALSE}
 library(tableone)
-p1<- CreateTableOne(vars = c("Age", "Genotype"), strata = "Gender", data=data)
-print(p1)
+table_data <- data %>% select(Patient_ID, Gender, `Age at 31/12/2020`, Genotype) %>% group_by(Patient_ID) %>% unique
+p1<- CreateTableOne(vars = c("Age at 31/12/2020", "Genotype"), strata = "Gender", addOverall = TRUE, data=table_data, test = FALSE)
+kableone(p1)
 ```
 
 ## Question 2
 # Summarise Outcome Variables 
 
+Summaries are below, first FEV1pp, then BMI Z-Score.
 
-# ppFEV
-```{r echo = F, warning=FALSE}
+# FEV1pp
+
+```{r echo = F, warning=FALSE, message=FALSE}
 summary(data$FEV1pp)
 FEV <- data[complete.cases(data$FEV1pp), ] 
-plot(density(FEV$FEV1pp))
-title(main = "Density of FEV1pp")
+ggplot(aes(FEV1pp), data = FEV)+geom_density() + geom_vline(aes(xintercept = mean(FEV1pp),color = "darkred"))+theme_classic()+
+  labs(title = "Density of FEV1pp", x="FEV1pp" , colour = "Mean FEV1pp" )
+
 ```
 
 # BMI Z Score
+
 ```{r echo = F, warning=FALSE}
 summary(data$BMI_z)
 ```
 
-```{r echo = F, warning=FALSE}
+```{r echo = F, warning=FALSE, message=FALSE}
 BMI <- data[complete.cases(data$BMI_z), ] 
+ggplot(aes(BMI_z), data = BMI)+geom_histogram() + geom_vline(aes(xintercept = mean(BMI_z), color = "darkred"))+theme_classic()+
+  labs(title = "Histogram of BMI Z-Score", x="BMI Z-Score", colour = "Mean BMI Z-Score" )
 
-hist(BMI$BMI_z)
-title(main = "Histogram of BMI Z-Score")
 ```
+
 ## Question 3
 # Lung Function over time
 
-```{r echo = F, warning=FALSE}
-ggplot(aes(Age_at_Encounter, FEV1pp, group = Age_at_Encounter), data = data)+geom_boxplot() +facet_wrap(~ Genotype) +geom_smooth(method="lm") 
+A boxplot of FEV1pp results by age, where the bar in the box represents median for that age, appears to show a decrease in lung function as age progresses:
+
+```{r echo = F, warning=FALSE, message=FALSE}
+ggplot(aes(Age_at_Encounter, FEV1pp, group = Age_at_Encounter), data = data)+geom_boxplot()+xlim(c(4,30)) +
+  scale_color_brewer(palette="Set2")+theme_classic()+
+  labs(title = "FEV1pp results by age", x="Age at Encounter", y = "FEV1pp Result" )
+
+
+
+```
+
+taking age at encounter on on continuous scale (showing fractions of years) and colouring by Genotype shows that this decrease is only apparent in Heterozygous and Homozygous F508del subjects, which together represent 93.5% of the cohort.
+
+```{r echo = F, warning=FALSE, message=FALSE}
+library(viridis)
+ggplot(aes(Age_at_Encounter_Cont, FEV1pp, color = Genotype), data = data)+geom_point()+geom_smooth(method="lm")+xlim(c(4,30)) +
+  scale_colour_viridis(discrete = TRUE)+theme_classic()+
+  labs(title = "FEV1pp results by age, coloured by Genotype", x="Age at Encounter (Continuous Scale)", y = "FEV1pp Result" )
+
+```
+
+a similar view is represented by the boxplot of this, which shows median lung function for the "Other Genotype" subjects consistently higher than for other genotypes at all ages:
+
+```{r echo = F, warning=FALSE, message=FALSE}
+ggplot(aes(x= Age_at_Encounter, y = FEV1pp, group = Age_at_Encounter), data = data)+geom_boxplot()+theme_classic()+facet_wrap(~Genotype)+
+  labs(title = "FEV1pp results by age", x="Age at Encounter", y = "FEV1pp Result" )
+
+
+
 ```
