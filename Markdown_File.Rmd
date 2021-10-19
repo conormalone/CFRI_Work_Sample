@@ -3,10 +3,10 @@ title: "CFRI Sample of Work"
 author: "Conor Malone"
 date: "19/10/2021"
 output:
+  word_document: default
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
-  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -86,7 +86,7 @@ ggplot(aes(BMI_z), data = BMI)+geom_histogram() + geom_vline(aes(xintercept = me
 ## Question 3
 # Lung Function over time
 
-A boxplot of FEV1pp results by age, where the bar in the box represents median for that age, appears to show a decrease in lung function as age progresses:
+A boxplot of FEV1pp results by age, where the bar in the box represents median for that age, appears to show a decrease in lung function (represented by FEV1pp) as age progresses:
 
 ```{r echo = F, warning=FALSE, message=FALSE}
 ggplot(aes(Age_at_Encounter, FEV1pp, group = Age_at_Encounter), data = data)+geom_boxplot()+xlim(c(4,30)) +
@@ -97,7 +97,7 @@ ggplot(aes(Age_at_Encounter, FEV1pp, group = Age_at_Encounter), data = data)+geo
 
 ```
 
-taking age at encounter on on continuous scale (showing fractions of years) and colouring by Genotype shows that this decrease is only apparent in Heterozygous and Homozygous F508del subjects, which together represent 93.5% of the cohort.
+taking age at encounter on on continuous scale (showing fractions of years) and colouring by Genotype shows that the trajectory of lung function is only showing an apparent decrease in Heterozygous and Homozygous F508del subjects, which together represent 93.5% of the cohort, not Other Genotypes (representing 6.5%).
 
 ```{r echo = F, warning=FALSE, message=FALSE}
 library(viridis)
