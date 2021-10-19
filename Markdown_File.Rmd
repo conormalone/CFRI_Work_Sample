@@ -1,3 +1,16 @@
+---
+title: "CFRI Work Sample"
+author: "Conor Malone"
+date: "19/10/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r echo = F, warning=FALSE, message=FALSE}
 library(readxl)
 library(tidyverse)
 data <- read_excel("Research Analyst dataset.xlsx", sheet = "Data")
@@ -22,27 +35,45 @@ data$Date_of_Birth <- ymd(data$Date_of_Birth)
 data$Date_of_Encounter <- ymd(data$Date_of_Encounter)
 data$Age_at_Encounter <- as.integer(floor((data$Date_of_Encounter- data$Date_of_Birth)/365))
 data$Age <- as.integer(floor((ymd("2020-12-31")- data$Date_of_Birth)/365))
-#Question 1
+```
+
+## Question 1
+# Table of Demographics
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+```{r echo = F, warning=FALSE}
 library(tableone)
-CreateTableOne(vars = c("Age", "Genotype"), strata = "Gender", data=data)
+p1<- CreateTableOne(vars = c("Age", "Genotype"), strata = "Gender", data=data)
+print(p1)
+```
+
+## Question 2
+# Summarise Outcome Variables 
 
 
-#question 2 summarise
-
+# ppFEV
+```{r echo = F, warning=FALSE}
 summary(data$FEV1pp)
-summary(FEV$FEV1pp)
 FEV <- data[complete.cases(data$FEV1pp), ] 
 plot(density(FEV$FEV1pp))
-ggplot(aes(FEV1pp), data = FEV)+geom_density()
+title(main = "Density of FEV1pp")
+```
 
+# BMI Z Score
+```{r echo = F, warning=FALSE}
+summary(data$BMI_z)
+```
+
+```{r echo = F, warning=FALSE}
 BMI <- data[complete.cases(data$BMI_z), ] 
 
 hist(BMI$BMI_z)
+title(main = "Histogram of BMI Z-Score")
+```
+## Question 3
+# Lung Function over time
 
-
-
-
-
-#question 3 lung function over time genotype
-plot(data$Age_at_Encounter, data$FEV1pp)
+```{r echo = F, warning=FALSE}
 ggplot(aes(Age_at_Encounter, FEV1pp, group = Age_at_Encounter), data = data)+geom_boxplot() +facet_wrap(~ Genotype) +geom_smooth(method="lm") 
+```
